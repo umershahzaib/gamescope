@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import Button from '../components/Button'
 import GameCard from '../components/GameCard'
 import GameCardSkeleton from '../components/GameCardSkeleton'
-import { getFeaturedHomepageGames } from '../services/gameService'
+import { getPopularGames } from '../services/gameService'
 
 const Home = () => {
   const [popularGames, setPopularGames] = useState([])
@@ -17,8 +17,9 @@ const Home = () => {
       try {
         setLoading(true)
         setError(null)
-        const games = await getFeaturedHomepageGames()
-        setPopularGames(games)
+        // Fetch only 8 games for homepage instead of 40
+        const result = await getPopularGames(1, 8)
+        setPopularGames(result.results || [])
       } catch (err) {
         console.error('Failed to load homepage games:', err)
         setError(err.message || 'Failed to load games')
@@ -30,7 +31,7 @@ const Home = () => {
     loadGames()
   }, [])
 
-  // Select featured games (first 6-8 visually impressive titles)
+  // Select featured games (first 6 for display)
   const featuredGames = popularGames.slice(0, 6)
 
   return (
@@ -39,12 +40,14 @@ const Home = () => {
       <section className="relative min-h-[90vh] flex items-center overflow-hidden">
         {/* Background with Video and Gradient Mesh */}
         <div className="absolute inset-0 -z-10">
-          {/* Video Background */}
+          {/* Video Background - Lazy loaded */}
           <video
             autoPlay
             loop
             muted
             playsInline
+            preload="none"
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover opacity-30"
           >
             <source src="/GameScope_website_hero_video_20260916130953.mp4" type="video/mp4" />
